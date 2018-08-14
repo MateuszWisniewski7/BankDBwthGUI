@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.layout.GridPane?>
+<BorderPane xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
+    <top>
+        <VBox>
+            <MenuBar>
+                <padding>
+                    <Insets left="0" top="0" right="0" bottom="0"/>
+                </padding>
+                <Menu text="Menu">
+                    <items>
+                        <Menu text="Add...">
+                            <items>
+                                <MenuItem onAction="#handleAddBranch" text="Add branch" />
+                                <MenuItem onAction="#handleAddCustomer" text="Add customer" />
+                                <MenuItem onAction="#handleAddTransaction" text="Add transaction" />
+                            </items>
+                        </Menu>
+                        <Menu text="Delete...">
+                            <items>
+                                <MenuItem onAction="#handleDeleteBranch" text="Delete branch" />
+                                <MenuItem onAction="#handleDeleteCustomer" text="Delete customer" />
+                                <MenuItem onAction="#handleDeleteTransaction" text="Delete transaction" />
+                            </items>
+                        </Menu>
+                        <MenuItem onAction="#handleExit" text="Exit" />
+                    </items>
+                </Menu>
+            </MenuBar>
+            <ToolBar>
+                <padding>
+                    <Insets left="0" top="0" right="0" bottom="0"/>
+                </padding>
+                <HBox spacing="2">
+                    <Button text="A">
+                        <tooltip>
+                            <Tooltip text="Add branch" />
+                        </tooltip>
+                    </Button>
+
+                    <Button text="B">
+                        <tooltip>
+                            <Tooltip text="Add Customer" />
+                        </tooltip>
+                    </Button>
+
+                    <Button text="C">
+                        <tooltip>
+                            <Tooltip text="Add Transaction" />
+                        </tooltip>
+                    </Button>
+
+                    <Separator orientation="VERTICAL" />
+
+                    <Button text="A">
+                        <tooltip>
+                            <Tooltip text="Delete branch" />
+                        </tooltip>
+                    </Button>
+
+                    <Button text="B">
+                        <tooltip>
+                            <Tooltip text="Delete Customer" />
+                        </tooltip>
+                    </Button>
+
+                    <Button text="C">
+                        <tooltip>
+                            <Tooltip text="Delete Transaction"/>
+                        </tooltip>
+                    </Button>
+                    <Label text="Find branch id:">
+                        <font>
+                            <Font size="15"/>
+                        </font>
+                    </Label>
+                    <TextField fx:id="branchIdFilter" prefWidth="30">
+                        <font>
+                            <Font size="10"/>
+                        </font>
+                    </TextField>
+
+                </HBox>
+            </ToolBar>
+            <HBox>
+                <Label text="Find branch id:">
+                    <font>
+                        <Font size="15"/>
+                    </font>
+                </Label>
+                <TextField fx:id="branchIdFilter" prefWidth="30">
+                    <font>
+                        <Font size="10"/>
+                    </font>
+                </TextField>
+                <Label text="Branch name:">
+                    <font>
+                        <Font size="15"/>
+                    </font>
+                </Label>
+                <TextField fx:id="branchNameFilter">
+                    <font>
+                        <Font size="10"/>
+                    </font>
+                </TextField>
+                <Label text="Customer id:">
+                    <font>
+                        <Font size="15"/>
+                    </font>
+                </Label>
+                <TextField fx:id="customerIdFilter" prefWidth="30">
+                    <font>
+                        <Font size="10"/>
+                    </font>
+                </TextField>
+                <Label text="Customer name:">
+                    <font>
+                        <Font size="15"/>
+                    </font>
+                </Label>
+                <TextField fx:id="customerNameFilter">
+                    <font>
+                        <Font size="10"/>
+                    </font>
+                </TextField>
+            </HBox>
+        </VBox>
+
+    </top>
+    <center>
+        <GridPane>
+            <TableView GridPane.columnIndex="0" GridPane.rowIndex="0">
+                <columns>
+                    <TableColumn text="Branches">
+                        <columns>
+                            <TableColumn text="Id" prefWidth="40">
+                                <cellValueFactory><PropertyValueFactory property="firstName" />
+                                </cellValueFactory>
+                            </TableColumn>
+                            <TableColumn text="Name" prefWidth="200">
+                                <cellValueFactory><PropertyValueFactory property="lastName" />
+                                </cellValueFactory>
+                            </TableColumn>
+                       </columns>
+                    </TableColumn>
+                </columns>
+            </TableView>
+            <TableView GridPane.columnIndex="1" GridPane.rowIndex="0">
+                <columns>
+                    <TableColumn text="Customers">
+                        <columns>
+                            <TableColumn text="Id" prefWidth="40">
+                                <cellValueFactory><PropertyValueFactory property="email" />
+                                </cellValueFactory>
+                            </TableColumn>
+                            <TableColumn text="Name" prefWidth="200">
+                                <cellValueFactory><PropertyValueFactory property="email" />
+                                </cellValueFactory>
+                            </TableColumn>
+                        </columns>
+                    </TableColumn>
+                </columns>
+            </TableView>
+            <TableView GridPane.columnIndex="2" GridPane.rowIndex="0" accessibleText="Tabela">
+                <columns>
+                    <TableColumn text="Transactions">
+                        <columns>
+                            <TableColumn text="Date">
+                                <cellValueFactory><PropertyValueFactory property="firstName" />
+                                </cellValueFactory>
+                            </TableColumn>
+                            <TableColumn text="Value">
+                                <cellValueFactory><PropertyValueFactory property="firstName" />
+                                </cellValueFactory>
+                            </TableColumn>
+                        </columns>
+                    </TableColumn>
+                </columns>
+            </TableView>
+        </GridPane>
+    </center>
+    <center>
+
+    </center>
+</BorderPane>
