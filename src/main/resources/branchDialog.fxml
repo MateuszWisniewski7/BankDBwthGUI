@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<DialogPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="BranchDialog"
+            prefHeight="-Infinity">
+    <headerText>
+        Fill fields and click OK or cancel action
+    </headerText>
+    <content>
+        <GridPane>
+            <Label text="Enter id: " GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <TextField fx:id="id" promptText="Id" GridPane.rowIndex="0" GridPane.columnIndex="1" onKeyReleased="#areTextFieldsFilled" />
+            <Label text="Enter name: " GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <TextField fx:id="name" promptText="Name" GridPane.rowIndex="1" GridPane.columnIndex="1" onKeyReleased="#areTextFieldsFilled" />
+            <Label fx:id="tip" text="Use only digits in id field" visible="false" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                <padding>
+                    <Insets top="3"/>
+                </padding>
+            </Label>
+        </GridPane>
+    </content>
+</DialogPane>

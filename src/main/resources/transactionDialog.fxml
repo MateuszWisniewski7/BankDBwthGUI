@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<DialogPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="TransactionDialog"
+            prefHeight="-Infinity">
+    <headerText>
+        Fill fields and click OK or cancel action
+    </headerText>
+    <content>
+        <GridPane>
+            <Label text="Enter value: " GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <TextField fx:id="value" promptText="value (PLN)" GridPane.rowIndex="0" GridPane.columnIndex="1" onKeyReleased="#areTextFieldsFilled" />
+            <Label fx:id="tip" text="Use only double form in initial transaction field" visible="false" GridPane.rowIndex="2" GridPane.columnIndex="0" GridPane.columnSpan="2">
+                <padding>
+                    <Insets top="3"/>
+                </padding>
+            </Label>
+            <ChoiceBox fx:id="choiceBox" GridPane.columnIndex="0" GridPane.rowIndex="3" GridPane.columnSpan="2"/>
+        </GridPane>
+    </content>
+</DialogPane>

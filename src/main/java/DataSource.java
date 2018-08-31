@@ -1,6 +1,9 @@
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import java.sql.*;
-import java.util.Date;
+import java.time.LocalDateTime;
+
 
 public class DataSource {
 
@@ -9,29 +12,32 @@ public class DataSource {
         return instance;
     }
 
-    static final String DB_NAME = "bank";
-    static final String SERVER = "localhost:3306";
-    static final String CONNECTION_STRING = "jdbc:mysql://" + SERVER + "/?useSSL=false&serverTimezone=UTC";
-    static final String USER = "student";
-    static final String PASSWORD = "student";
+    private ObservableList<ObservableList> data;
 
-    static final String TABLE_BRANCHES = "branches";
-    static final String COLUMN_BRANCH_ID = "_id";
-    static final String COLUMN_BRANCH_NAME = "name";
+    private static final String DB_NAME = "bank";
+    private static final String SERVER = "localhost:3306";
+    private static final String CONNECTION_STRING = "jdbc:mysql://" + SERVER + "/?useSSL=false&useTimezone=true&serverTimezone=Europe/Warsaw";
+    private static final String USER = "student";
+    private static final String PASSWORD = "student";
 
-    static final String TABLE_CUSTOMERS = "customers";
-    static final String COLUMN_CUSTOMER_ID = "_id";
-    static final String COLUMN_CUSTOMER_NAME = "name";
-    static final String COLUMN_CUSTOMER_BRANCH_ID = "branch";
+    private static final String TABLE_BRANCHES = "branches";
+    private static final String COLUMN_BRANCH_ID = "_id";
+    private static final String COLUMN_BRANCH_NAME = "name";
 
-    static final String TABLE_TRANSACTIONS = "transactions";
-    static final String COLUMN_TRANSACTION_DATE = "_date";
-    static final String COLUMN_TRANSACTION_VALUE = "_value";
-    static final String COLUMN_TRANSACTION_CUSTOMER_ID = "customer";
+    private static final String TABLE_CUSTOMERS = "customers";
+    private static final String COLUMN_CUSTOMER_ID = "_id";
+    private static final String COLUMN_CUSTOMER_NAME = "name";
+    private static final String COLUMN_CUSTOMER_BRANCH_ID = "branch";
+
+    private static final String TABLE_TRANSACTIONS = "transactions";
+    private static final String COLUMN_TRANSACTION_DATE = "_date";
+    private static final String COLUMN_TRANSACTION_VALUE = "_value";
+    private static final String COLUMN_TRANSACTION_CUSTOMER_ID = "customer";
+
 
     private Connection conn;
 
-    // opening connection with server, creating database if's not created and tables
+    // opening connection with server, creating database if it's not created and tables
 
     public boolean open() {
         try {
@@ -77,196 +83,204 @@ public class DataSource {
         try {
             if (conn != null) {
                 conn.close();
+                System.out.println("Connection successfully closed.");
             }
         } catch (SQLException e) {
-            System.out.println("Couldn't close connection: " + e.getMessage());
+            System.out.println("Connection closing problem: " + e.getMessage());
         }
     }
 
-    public void addBranch(String name) {
-        if (selectBranchId(name)==0){
-            //if (!checkBranch(name)) {
-            String insertBranch = "INSERT INTO " + TABLE_BRANCHES + " (" + COLUMN_BRANCH_NAME + ") " + "VALUES ('" + name + "')";
-            try {
-                Statement statement = conn.createStatement();
-                statement.executeUpdate(insertBranch);
-                statement.close();
-                System.out.println("Branch " + name + " is" + " successfully added.");
-            } catch (SQLException e) {
-                System.out.println("ERROR in addBranch method: " + e.getMessage());
-            }
-        } else
-            System.out.println("Branch already exists in database.");
-    }
-
-//    public boolean checkBranch(String name) {
-//        String selectBranch = "SELECT " + COLUMN_BRANCH_NAME + " FROM " + TABLE_BRANCHES + " WHERE " + COLUMN_BRANCH_NAME + "='" + name + "'";
-//        boolean checker = true;
-//        try {
-//            Statement statement = conn.createStatement();
-//            ResultSet resultSet = statement.executeQuery(selectBranch);
-//            if (!resultSet.next())
-//                checker = false;
-//            else
-//                checker = true;
-//            resultSet.close();
-//            statement.close();
-//        } catch (SQLException e) {
-//            System.out.println("ERROR in checkBranch method: " + e.getMessage());
-//        }
-//        return checker;
-//    }
-
-    public int selectBranchId(String name) {
-        String selectBranchId = "SELECT " + COLUMN_BRANCH_ID + " FROM " + TABLE_BRANCHES + " WHERE " + COLUMN_BRANCH_NAME + "='" + name + "'";
-        int id = 0;
+    public void addBranch(BranchesTableModel branch) {
+        String insertBranch = "INSERT INTO " + TABLE_BRANCHES + " ("
+                + COLUMN_BRANCH_ID+ " , "
+                + COLUMN_BRANCH_NAME + ") "
+                + "VALUES ("+ branch.getId() +" , '" + branch.getName() + "')";
         try {
             Statement statement = conn.createStatement();
-            ResultSet resultSet = statement.executeQuery(selectBranchId);
-            while (resultSet.next()) {
-                id = resultSet.getInt(COLUMN_BRANCH_ID);
-            }
-            resultSet.close();
+            statement.executeUpdate(insertBranch);
             statement.close();
-            return id;
         } catch (SQLException e) {
-            System.out.println("ERROR in selectBranchId method: " + e.getMessage());
-            return 0;
+            System.out.println("ERROR in addBranch method: " + e.getMessage());
         }
     }
 
-    public void selectBranches(){
-        String selectBranches = "SELECT * FROM " + TABLE_BRANCHES;
-        try {
-            Statement statement = conn.createStatement();
-            ResultSet resultSet = statement.executeQuery(selectBranches);
-            System.out.println("ID\tBRANCH_NAME");
-            while (resultSet.next()) {
-                System.out.println(resultSet.getInt(COLUMN_BRANCH_ID)+"\t"+
-                        resultSet.getString(COLUMN_BRANCH_NAME));
-            }
-            resultSet.close();
-            statement.close();
-        } catch (SQLException e) {
-            System.out.println("ERROR in selectBranches method: " + e.getMessage());
-        }
-    }
 
-    public void addCustomer(int branchId, String name, double initial) {
+    public void addCustomer(CustomersTableModel customer, double initial) {
         String insertCustomer = "INSERT INTO " + TABLE_CUSTOMERS + " ("
+                + COLUMN_CUSTOMER_ID + " , "
                 + COLUMN_CUSTOMER_NAME + " , "
                 + COLUMN_CUSTOMER_BRANCH_ID + ") "
-                + "VALUES ('" + name + "' , " + branchId + ")";
+                + "VALUES ("+ customer.getId() + " , '" + customer.getName() + "' , " + customer.getBranchId() + ")";
+
         try {
             Statement statement = conn.createStatement();
             statement.executeUpdate(insertCustomer);
             statement.close();
-            System.out.println("Customer " + name + " is" + " successfully added.");
         } catch (SQLException e) {
             System.out.println("ERROR in addCustomer method: " + e.getMessage());
         }
-        addTransaction(1,initial);
+        addTransaction(new TransactionsTableModel(java.sql.Timestamp.valueOf(LocalDateTime.now()),Double.toString(initial),customer.getId()));
 
     }
 
-//    private boolean checkCustomer(String name, int branchId) {
-//        String selectCustomer = "SELECT " + COLUMN_CUSTOMER_NAME + " FROM " + TABLE_CUSTOMERS + " WHERE " + COLUMN_CUSTOMER_NAME + "='" + name + "'"
-//                + " and " + COLUMN_CUSTOMER_BRANCH_ID + "=" + branchId;
-//        boolean checker = true;
-//        try {
-//            Statement statement = conn.createStatement();
-//            ResultSet resultSet = statement.executeQuery(selectCustomer);
-//            if (!resultSet.next())
-//                checker = false;
-//            else
-//                checker = true;
-//            resultSet.close();
-//            statement.close();
-//        } catch (SQLException e) {
-//            System.out.println("ERROR in checkCustomer method: " + e.getMessage());
-//        }
-//        return checker;
-//    }
-
-    public int selectCustomerId(String name, int branchId) {
-        String selectCustomerId = "SELECT " + COLUMN_CUSTOMER_ID + " FROM "
-                + TABLE_CUSTOMERS
-                + " WHERE "
-                + COLUMN_CUSTOMER_NAME + "='" + name + "'"
-                + " and " + COLUMN_CUSTOMER_BRANCH_ID + "=" + branchId;
-        int id = 0;
-        try {
-            Statement statement = conn.createStatement();
-            ResultSet resultSet = statement.executeQuery(selectCustomerId);
-            while (resultSet.next()) {
-                id = resultSet.getInt(COLUMN_CUSTOMER_ID);
-            }
-            resultSet.close();
-            statement.close();
-            return id;
-        } catch (SQLException e) {
-            System.out.println("ERROR in selectCustomer method: " + e.getMessage());
-            return 0;
-        }
-    }
-
-    public void selectCustomers(int branchId){
-        String selectCustomers = "SELECT * FROM " + TABLE_CUSTOMERS + " WHERE " + COLUMN_CUSTOMER_BRANCH_ID + "=" + branchId;
-        try {
-            Statement statement = conn.createStatement();
-            ResultSet resultSet = statement.executeQuery(selectCustomers);
-            System.out.println("ID\tCUSTOMER_NAME\tBRANCH_ID");
-            while (resultSet.next()) {
-                System.out.println(resultSet.getInt(COLUMN_CUSTOMER_ID)+"\t"+
-                        resultSet.getString(COLUMN_CUSTOMER_NAME)+"\t"+
-                        resultSet.getInt(COLUMN_CUSTOMER_BRANCH_ID));
-            }
-            resultSet.close();
-            statement.close();
-        } catch (SQLException e) {
-            System.out.println("ERROR in selectCustomers method: " + e.getMessage());
-        }
-    }
-
-    public void addTransaction(int customerId, double value) {
-        java.util.Date now = new Date();
-        java.sql.Timestamp date = new java.sql.Timestamp(now.getTime());
+    public void addTransaction(TransactionsTableModel transaction) {
+        java.sql.Timestamp date = java.sql.Timestamp.valueOf(transaction.getDate());
         String insertTransaction = "INSERT INTO " + TABLE_TRANSACTIONS + " ("
                 + COLUMN_TRANSACTION_DATE + " , "
                 + COLUMN_TRANSACTION_VALUE + " , "
                 + COLUMN_TRANSACTION_CUSTOMER_ID + ") "
                 + "VALUES ('"
                 + date + "' , '"
-                + value + "' , "
-                + customerId + ")";
+                + Double.parseDouble(transaction.getValue().substring(0,transaction.getValue().indexOf('P'))) + "' , "
+                + transaction.getCustomerId() + ")";
         try {
             Statement statement = conn.createStatement();
             statement.executeUpdate(insertTransaction);
             statement.close();
-            System.out.println("Transaction successfully added.");
         } catch (SQLException e) {
-            System.out.println("ERROR in addCustomer method: " + e.getMessage());
+            System.out.println("ERROR in addTransaction method: " + e.getMessage());
         }
     }
 
-    public void selectTransactions(int customerId){
-        String selectTransactions = "SELECT * FROM " + TABLE_TRANSACTIONS + " WHERE " + COLUMN_TRANSACTION_CUSTOMER_ID + "=" + customerId;
+    public void deleteBranch(int id) {
+        String deleteBranch = "DELETE FROM " + TABLE_BRANCHES + " WHERE "
+                + COLUMN_BRANCH_ID+ " = "
+                + id;
         try {
             Statement statement = conn.createStatement();
-            ResultSet resultSet = statement.executeQuery(selectTransactions);
-            System.out.println("DATE\tVALUE\tCUSTOMER_ID");
-            while (resultSet.next()) {
-                System.out.println(resultSet.getTimestamp(COLUMN_TRANSACTION_DATE)+"\t"+
-                        resultSet.getString(COLUMN_TRANSACTION_VALUE)+"\t"+
-                        resultSet.getInt(COLUMN_TRANSACTION_CUSTOMER_ID));
-            }
-            resultSet.close();
+            statement.executeUpdate(deleteBranch);
             statement.close();
         } catch (SQLException e) {
-            System.out.println("ERROR in selectCustomers method: " + e.getMessage());
+            System.out.println("ERROR in deleteBranch method: " + e.getMessage());
+        }
+        deleteAllCustomers(id);
+    }
+
+
+    public void deleteCustomer(int id) {
+        String deleteCustomer = "DELETE FROM " + TABLE_CUSTOMERS + " WHERE "
+                + COLUMN_CUSTOMER_ID + " = "
+                + id;
+        try {
+            Statement statement = conn.createStatement();
+            statement.executeUpdate(deleteCustomer);
+            statement.close();
+        } catch (SQLException e) {
+            System.out.println("ERROR in deleteCustomer method: " + e.getMessage());
+        }
+        deleteAllTransactions(id);
+    }
+
+    private void deleteAllCustomers(int id) {
+        String deleteCustomer = "DELETE FROM " + TABLE_CUSTOMERS + " WHERE "
+                + COLUMN_CUSTOMER_BRANCH_ID + " = "
+                + id;
+        try {
+            Statement statement = conn.createStatement();
+            statement.executeUpdate(deleteCustomer);
+            statement.close();
+        } catch (SQLException e) {
+            System.out.println("ERROR in deleteCustomer method: " + e.getMessage());
+        }
+        deleteAllTransactions(id);
+    }
+
+    public void deleteTransaction(LocalDateTime dateLocal) {
+//        String date = dateLocal.toString().replace('T',' ');
+        java.sql.Timestamp date = Timestamp.valueOf(dateLocal);
+        String deleteTransaction = "DELETE FROM " + TABLE_TRANSACTIONS + " WHERE "
+                + COLUMN_TRANSACTION_DATE + " = "
+                +"?";
+        try {
+            PreparedStatement preparedStatement=conn.prepareStatement(deleteTransaction);
+            preparedStatement.setTimestamp(1,date);
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            System.out.println("ERROR in deleteTransaction method: " + e.getMessage());
         }
     }
 
+    private void deleteAllTransactions(int id) {
+        String deleteTransaction = "DELETE FROM " + TABLE_TRANSACTIONS + " WHERE "
+                + COLUMN_TRANSACTION_CUSTOMER_ID + " = "
+                + id;
+        try {
+            Statement statement = conn.createStatement();
+            statement.executeUpdate(deleteTransaction);
+            statement.close();
+        } catch (SQLException e) {
+            System.out.println("ERROR in deleteTransaction method: " + e.getMessage());
+        }
+    }
+
+    public ObservableList<BranchesTableModel> loadBranches() {
+        try {
+            ObservableList<BranchesTableModel> branchesObvList = FXCollections.observableArrayList();
+            String selectBranches = "SELECT * FROM " + TABLE_BRANCHES;
+            Statement statement = conn.createStatement();
+            ResultSet resultSet = statement.executeQuery(selectBranches);
+            while (resultSet.next()) {
+                branchesObvList.add(new BranchesTableModel(resultSet.getInt(COLUMN_BRANCH_ID),resultSet.getString(COLUMN_BRANCH_NAME),false));
+            }
+            return branchesObvList;
+        }
+        catch (SQLException e){
+            System.out.println("Error loading branches: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public ObservableList<CustomersTableModel> loadCustomers(int branchId){
+        try{
+            ObservableList<CustomersTableModel> customersObvList = FXCollections.observableArrayList();
+            String selectCustomers = "SELECT * FROM " + TABLE_CUSTOMERS + " WHERE " + COLUMN_CUSTOMER_BRANCH_ID + "=" + branchId;
+            Statement statement = conn.createStatement();
+            ResultSet resultSet = statement.executeQuery(selectCustomers);
+            while (resultSet.next()) {
+                customersObvList.add(new CustomersTableModel(resultSet.getInt(COLUMN_CUSTOMER_ID),resultSet.getString(COLUMN_CUSTOMER_NAME),false,resultSet.getInt(COLUMN_CUSTOMER_BRANCH_ID)));
+            }
+            return customersObvList;
+        }
+        catch (SQLException e)   {
+            System.out.println("Error loading customers: " + e.getMessage());
+    }
+        return null;
+    }
+
+    public ObservableList<CustomersTableModel> loadAllCustomers(){
+        try{
+            ObservableList<CustomersTableModel> customersObvList = FXCollections.observableArrayList();
+            String selectCustomers = "SELECT * FROM " + TABLE_CUSTOMERS;
+            Statement statement = conn.createStatement();
+            ResultSet resultSet = statement.executeQuery(selectCustomers);
+            while (resultSet.next()) {
+                customersObvList.add(new CustomersTableModel(resultSet.getInt(COLUMN_CUSTOMER_ID),resultSet.getString(COLUMN_CUSTOMER_NAME),false,resultSet.getInt(COLUMN_CUSTOMER_BRANCH_ID)));
+            }
+            return customersObvList;
+        }
+        catch (SQLException e)   {
+            System.out.println("Error loading customers: " + e.getMessage());
+        }
+        return null;
+    }
+
+
+    public ObservableList<TransactionsTableModel> loadTransactions(int customerId){
+        try{
+            ObservableList<TransactionsTableModel> transactionsObvList = FXCollections.observableArrayList();
+            String selectTransactions = "SELECT * FROM " + TABLE_TRANSACTIONS + " WHERE " + COLUMN_TRANSACTION_CUSTOMER_ID + "=" + customerId;
+            Statement statement = conn.createStatement();
+            ResultSet resultSet = statement.executeQuery(selectTransactions);
+            while (resultSet.next()) {
+                transactionsObvList.add(new TransactionsTableModel(resultSet.getTimestamp(COLUMN_TRANSACTION_DATE),resultSet.getString(COLUMN_TRANSACTION_VALUE),resultSet.getInt(COLUMN_TRANSACTION_CUSTOMER_ID)));
+            }
+            return transactionsObvList;
+        }
+        catch (SQLException e)   {
+            System.out.println("Error loading customers: " + e.getMessage());
+        }
+        return null;
+    }
 }
 
 

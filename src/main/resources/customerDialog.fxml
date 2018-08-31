@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.geometry.Insets?>
+<DialogPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="CustomerDialog"
+            prefHeight="-Infinity">
+    <headerText>
+        Fill fields and click OK or cancel action
+    </headerText>
+    <content>
+        <GridPane>
+            <Label text="Enter id: " GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <TextField fx:id="id" promptText="Id" GridPane.rowIndex="0" GridPane.columnIndex="1" onKeyReleased="#areTextFieldsFilled" />
+            <Label text="Enter name: " GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <TextField fx:id="name" promptText="Name" GridPane.rowIndex="1" GridPane.columnIndex="1" onKeyReleased="#areTextFieldsFilled" />
+            <Label text="Enter initial transaction value: " GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <TextField fx:id="initial" promptText="value(PLN)" GridPane.rowIndex="2" GridPane.columnIndex="1" onKeyReleased="#areTextFieldsFilled" />
+            <Label fx:id="tip"  visible="false" GridPane.rowIndex="3" GridPane.columnIndex="0" GridPane.columnSpan="2">
+                <padding>
+                    <Insets top="3"/>
+                </padding>
+            </Label>
+            <Label text="Choose branch: " GridPane.columnIndex="0" GridPane.rowIndex="4" />
+            <ChoiceBox fx:id="choiceBox" GridPane.columnIndex="1" GridPane.rowIndex="4" GridPane.columnSpan="2" />
+        </GridPane>
+    </content>
+</DialogPane>
