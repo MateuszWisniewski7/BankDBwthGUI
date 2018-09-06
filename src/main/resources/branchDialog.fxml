@@ -6,7 +6,7 @@
 <?import javafx.geometry.Insets?>
 <DialogPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="BranchDialog"
+            fx:controller="BranchDialogCtlr"
             prefHeight="-Infinity">
     <headerText>
         Fill fields and click OK or cancel action

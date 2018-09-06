@@ -6,7 +6,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.regex.Pattern;
 
-public class TransactionDialog {
+public class TransactionDialogCtrl {
 
     @FXML TextField value;
     @FXML Label tip;

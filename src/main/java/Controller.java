@@ -1,5 +1,6 @@
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
@@ -8,17 +9,20 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 
-import javax.xml.crypto.Data;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.chrono.ChronoLocalDate;
+import java.util.ArrayList;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 
 public class Controller {
 
     @FXML private BorderPane mainPane;
     @FXML private TextField branchIdFilter;
+    @FXML private TextField customerIdFilter;
+    @FXML private TextField branchNameFilter;
+    @FXML private TextField customerNameFilter;
     @FXML private CheckBox dateFilter;
     @FXML private DatePicker fromPickedDate;
     @FXML private DatePicker toPickedDate;
@@ -47,13 +51,18 @@ public class Controller {
     private ObservableList<CustomersTableModel> customersObvList;
     private ObservableList<TransactionsTableModel> transactionsObvList;
 
+    private ObservableList<BranchesTableModel> filteredBranchesObvList;
+    private ObservableList<CustomersTableModel> filteredCustomersObvList;
+    private ObservableList<TransactionsTableModel> filteredTransactionsObvList;
+
 
 
     public void initialize(){
         branchesObvList = DataSource.getInstance().loadBranches();
+        filteredBranchesObvList=branchesObvList;
         branchIdCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         branchNameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
-        branchesTable.setItems(branchesObvList);
+        branchesTable.setItems(filteredBranchesObvList);
         branchNameCol.setSortType(TableColumn.SortType.ASCENDING);
         branchesTable.getSortOrder().add(branchNameCol);
         branchesTable.getSelectionModel().selectFirst();
@@ -76,14 +85,16 @@ public class Controller {
                 if(mouseEvent.getClickCount() == 2){
                     try{
                         transactionsTable.setItems(null);
+                        toPickedDate.getEditor().clear();
+                        fromPickedDate.getEditor().clear();
                         customersObvList=DataSource.getInstance().loadCustomers(branchesTable.getSelectionModel().getSelectedItem().getId());
-                        customersTable.setItems(customersObvList);
+                        filteredCustomersObvList=customersObvList;
+                        customersTable.setItems(filteredCustomersObvList);
                         customerNameCol.setSortType(TableColumn.SortType.ASCENDING);
                         customersTable.getSortOrder().add(customerNameCol);
                         customersTable.getSelectionModel().selectFirst();
-                        customersCounter.setText(customersCounter.getText().substring(0,customersCounterTxtLength)+customersObvList.size());
-                        transactionsCounter.setText(transactionsCounter.getText().substring(0,transactionsCounterTxtLength));
-                        transactionsSum.setText(transactionsSum.getText().substring(0,transactionsTxtLength));
+                        refreshCCounters();
+                        refreshTCounters();
                         branchesTable.getSelectionModel().getSelectedItem().setSelected(true);
                         branchesTable.getItems().filtered(p->!p.equals(branchesTable.getSelectionModel().getSelectedItem())).forEach(notSelected->notSelected.setSelected(false));
                         cellUpdate(branchNameCol,branchesTable);
@@ -105,15 +116,12 @@ public class Controller {
                 if(mouseEvent.getClickCount() == 2){
                     try{
                         transactionsObvList=DataSource.getInstance().loadTransactions(customersTable.getSelectionModel().getSelectedItem().getId());
+                        toPickedDate.getEditor().clear();
+                        fromPickedDate.getEditor().clear();
                         transactionsTable.setItems(transactionsObvList);
                         transactionDateCol.setSortType(TableColumn.SortType.DESCENDING);
                         transactionsTable.getSortOrder().add(transactionDateCol);
-                        transactionsCounter.setText(transactionsCounter.getText().substring(0,transactionsCounterTxtLength)+transactionsObvList.size());
-                        double sum = 0.0;
-                        for (TransactionsTableModel trans : transactionsObvList) {
-                            sum += Double.parseDouble(trans.getValue().substring(0,trans.getValue().indexOf('P')));
-                        }
-                        transactionsSum.setText(transactionsSum.getText().substring(0,transactionsTxtLength)+String.format("%.2f",sum)+"PLN");
+                        refreshTCounters();
                         customersTable.getSelectionModel().getSelectedItem().setSelected(true);
                         customersTable.getItems().filtered(p->!p.equals(customersTable.getSelectionModel().getSelectedItem())).forEach(notSelected->notSelected.setSelected(false));
                         cellUpdate(customerNameCol,customersTable);
@@ -142,7 +150,7 @@ public class Controller {
         }
         dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
-        BranchDialog controller = fxmlLoader.getController();
+        BranchDialogCtlr controller = fxmlLoader.getController();
         Optional<ButtonType> result = dialog.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK){
             if (controller.areTextFieldsFilled()){
@@ -151,7 +159,7 @@ public class Controller {
                     branchesObvList.add(newBranch);
                     branchesTable.getSelectionModel().select(newBranch);
                     DataSource.getInstance().addBranch(newBranch);
-                    branchesCounter.setText(branchesCounter.getText().substring(0,branchesCounterTxtLength)+branchesObvList.size());
+                    refreshBCounters();
                 }else{
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Add branch");
@@ -180,7 +188,7 @@ public class Controller {
         }
         dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
-        CustomerDialog controller = fxmlLoader.getController();
+        CustomerDialogCtrl controller = fxmlLoader.getController();
         controller.choiceBox.setItems(branchesObvList);
         controller.choiceBox.getSelectionModel().select(branchesTable.getSelectionModel().getSelectedItem());
         Optional<ButtonType> result = dialog.showAndWait();
@@ -191,7 +199,7 @@ public class Controller {
                     customersObvList.add(newCustomer);
                     customersTable.getSelectionModel().select(newCustomer);
                     DataSource.getInstance().addCustomer(newCustomer,controller.getInitial());
-                    customersCounter.setText(customersCounter.getText().substring(0,customersCounterTxtLength)+customersObvList.size());
+                    refreshCCounters();
                 }else{
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Add customer");
@@ -219,25 +227,23 @@ public class Controller {
         }
         dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
-        TransactionDialog controller = fxmlLoader.getController();
-        customersObvList=DataSource.getInstance().loadAllCustomers();
-        controller.choiceBox.setItems(customersObvList);
+        TransactionDialogCtrl controller = fxmlLoader.getController();
+        ObservableList<CustomersTableModel> allCustomers=DataSource.getInstance().loadAllCustomers();
+        controller.choiceBox.setItems(allCustomers);
         if(!(customersTable.getSelectionModel().getSelectedItem()==null)){
-            controller.choiceBox.getSelectionModel().select(customersTable.getSelectionModel().getSelectedItem());}
+            controller.choiceBox.getItems().filtered(item->item.getId().equals(customersTable.getSelectionModel().getSelectedItem().getId())).forEach(item->controller.choiceBox.getSelectionModel().select(item));
+        }
         Optional<ButtonType> result = dialog.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK){
             if (controller.areTextFieldsFilled()){
                 TransactionsTableModel newTransaction = controller.create(controller.choiceBox.getSelectionModel().getSelectedItem().getId());
                 if (!(customersTable.getSelectionModel().getSelectedItem()==null))
                 if (controller.choiceBox.getSelectionModel().getSelectedItem().getId().equals(customersTable.getSelectionModel().getSelectedItem().getId()) && customersTable.getSelectionModel().getSelectedItem().isSelected())
-                {transactionsObvList.add(newTransaction);
-                transactionsTable.getSelectionModel().select(newTransaction);
-                transactionsCounter.setText(transactionsCounter.getText().substring(0,transactionsCounterTxtLength)+transactionsObvList.size());
-                double sum = 0.0;
-                for (TransactionsTableModel trans : transactionsObvList) {
-                    sum += Double.parseDouble(trans.getValue().substring(0,trans.getValue().indexOf('P')));
+                {
+                    transactionsObvList.add(newTransaction);
+                    transactionsTable.getSelectionModel().select(newTransaction);
+                    refreshTCounters();
                 }
-                transactionsSum.setText(transactionsSum.getText().substring(0,transactionsTxtLength)+String.format("%.2f",sum)+"PLN");}
                 DataSource.getInstance().addTransaction(newTransaction);
             }else{
                 handleAddTransaction();
@@ -264,7 +270,9 @@ public class Controller {
                 customersTable.setItems(null);
                 transactionsTable.setItems(null);
                 branchesTable.getSelectionModel().selectFirst();
-                branchesCounter.setText(branchesCounter.getText().substring(0,branchesCounterTxtLength)+branchesObvList.size());
+                refreshBCounters();
+                refreshCCounters();
+                refreshTCounters();
                 DataSource.getInstance().deleteBranch(item.getId());
             }
         }
@@ -288,7 +296,8 @@ public class Controller {
                 customersObvList.remove(item);
                 transactionsTable.setItems(null);
                 customersTable.getSelectionModel().selectFirst();
-                customersCounter.setText(customersCounter.getText().substring(0,customersCounterTxtLength)+customersObvList.size());
+                refreshCCounters();
+                refreshTCounters();
                 DataSource.getInstance().deleteCustomer(item.getId());
             }
         }
@@ -309,24 +318,135 @@ public class Controller {
             Optional<ButtonType> result= alert.showAndWait();
             if(result.isPresent() && result.get() == ButtonType.OK){
                 transactionsObvList.remove(item);
-                transactionsCounter.setText(transactionsCounter.getText().substring(0,transactionsCounterTxtLength)+transactionsObvList.size());
-                double sum = 0.0;
-                for (TransactionsTableModel trans : transactionsObvList) {
-                    sum += Double.parseDouble(trans.getValue().substring(0,trans.getValue().indexOf('P')));
-                }
-                transactionsSum.setText(transactionsSum.getText().substring(0,transactionsTxtLength)+String.format("%.2f",sum)+"PLN");
+                refreshTCounters();
                 DataSource.getInstance().deleteTransaction(item.getDate());
             }
         }
     }
 
     @FXML
-    public void handleDateFilter(){
+    public void handleClearDates(){
+        transactionsTable.setItems(transactionsObvList);
+        toPickedDate.getEditor().clear();
+        fromPickedDate.getEditor().clear();
+        refreshTCounters();
+    }
+
+    @FXML
+    public void handleRange(){
         if (dateFilter.isSelected()){
             toPickedDate.setDisable(false);
         }
         else{
             toPickedDate.setDisable(true);
+            toPickedDate.getEditor().setText("");
+        }
+    }
+
+    @FXML
+    public void handleDateFilter(){
+        if(!(customersTable.getItems().isEmpty())){
+            if(!(fromPickedDate.getEditor().getText().isEmpty()) && toPickedDate.getEditor().getText().isEmpty()){
+                if (toPickedDate.isDisabled()) {
+                    transactionsTable.setItems(transactionsObvList.filtered(item -> ChronoLocalDate.from(item.getDate()).compareTo(ChronoLocalDate.from(fromPickedDate.getValue())) == 0));
+                }else{
+                    transactionsTable.setItems(transactionsObvList.filtered(item -> ChronoLocalDate.from(item.getDate()).compareTo(ChronoLocalDate.from(fromPickedDate.getValue())) >= 0));
+                }
+            }else if((!(fromPickedDate.getEditor().getText().isEmpty()) && !(toPickedDate.getEditor().getText().isEmpty()))){
+                transactionsTable.setItems(transactionsObvList.filtered(item -> (ChronoLocalDate.from(item.getDate()).compareTo(ChronoLocalDate.from(fromPickedDate.getValue())) >= 0) && (ChronoLocalDate.from(item.getDate()).compareTo(ChronoLocalDate.from(toPickedDate.getValue())) <= 0)));
+            }else {
+                transactionsTable.setItems(transactionsObvList.filtered(item -> ChronoLocalDate.from(item.getDate()).compareTo(ChronoLocalDate.from(toPickedDate.getValue())) <= 0));
+            }
+            refreshTCounters();
+        }
+    }
+
+    @FXML
+    public void handleCustomerFilter(){
+        final Pattern pattern = Pattern.compile("\\d*");
+        ObservableList<CustomersTableModel> temp;
+        if(pattern.matcher(customerIdFilter.getText()).matches()){
+            if(!(customersObvList==null || customersObvList.isEmpty())){
+                if(!(customerNameFilter.getText().trim().isEmpty())){
+                    temp=customersObvList.filtered(customer->customer.getName().length()>=customerNameFilter.getText().trim().length());
+                    temp=temp.filtered(customer->customer.getName().substring(0,customerNameFilter.getText().trim().length()).equalsIgnoreCase(customerNameFilter.getText().trim()));
+                    if(temp.isEmpty()){
+                        customersTable.setItems(null);
+                        transactionsTable.setItems(null);
+                        customersObvList.forEach(item->item.setSelected(false));
+                        refreshCCounters();
+                        refreshTCounters();
+                        return;
+                    }else{
+                        filteredCustomersObvList=temp;
+                    }
+                }else{
+                    filteredCustomersObvList=customersObvList;
+                }
+                if(!(customerIdFilter.getText().isEmpty())){
+                    temp=filteredCustomersObvList.filtered(customer -> customer.getId().equals(Integer.parseInt(customerIdFilter.getText())));
+                    filteredCustomersObvList=temp;
+                }
+                if (filteredCustomersObvList.filtered(p->p.isSelected()).isEmpty()) {
+                    customersObvList.forEach(item -> item.setSelected(false));
+                    transactionsTable.setItems(null);
+                }
+                customersTable.setItems(filteredCustomersObvList);
+                customersTable.getSelectionModel().selectFirst();
+                refreshCCounters();
+                refreshTCounters();
+            }
+        }else{
+            customerIdFilter.setText(customerIdFilter.getText(0,customerIdFilter.getLength()-1));
+            customerIdFilter.positionCaret(customerIdFilter.getLength());
+        }
+    }
+
+
+    @FXML
+    public void handleBranchFilter(){
+        final Pattern pattern = Pattern.compile("\\d*");
+        ObservableList<BranchesTableModel> temp;
+        if(pattern.matcher(branchIdFilter.getText()).matches()){
+            if(!(branchesObvList==null || branchesObvList.isEmpty())){
+                if(!(branchNameFilter.getText().trim().isEmpty())){
+                    temp=branchesObvList.filtered(branch->branch.getName().length()>=branchNameFilter.getText().trim().length());
+                    temp=temp.filtered(branch->branch.getName().substring(0,branchNameFilter.getText().trim().length()).equalsIgnoreCase(branchNameFilter.getText().trim()));
+                    if(temp.isEmpty()){
+                        branchesTable.setItems(null);
+                        customersTable.setItems(null);
+                        transactionsTable.setItems(null);
+                        branchesObvList.forEach(item->item.setSelected(false));
+                        customersObvList.forEach(item->item.setSelected(false));
+                        refreshBCounters();
+                        refreshCCounters();
+                        refreshTCounters();
+                        return;
+                    }else{
+                        filteredBranchesObvList=temp;
+                    }
+                }else{
+                    filteredBranchesObvList=branchesObvList;
+                }
+                if(!(branchIdFilter.getText().isEmpty())){
+                    temp=filteredBranchesObvList.filtered(branch -> branch.getId().equals(Integer.parseInt(branchIdFilter.getText())));
+                    filteredBranchesObvList=temp;
+                }
+                if (filteredBranchesObvList.filtered(p->p.isSelected()).isEmpty()) {
+                    branchesObvList.forEach(item -> item.setSelected(false));
+                    customersObvList.forEach(item -> item.setSelected(false));
+                    customersTable.setItems(null);
+                    transactionsTable.setItems(null);
+                }
+                branchesTable.setItems(filteredBranchesObvList);
+                branchesTable.getSelectionModel().selectFirst();
+                refreshBCounters();
+                refreshCCounters();
+                refreshTCounters();
+            }
+        }else{
+            branchIdFilter.setText(branchIdFilter.getText(0,branchIdFilter.getLength()-1));
+            branchIdFilter.positionCaret(branchIdFilter.getLength());
         }
     }
 
@@ -373,7 +493,35 @@ public class Controller {
         });
 
     }
+    private void refreshTCounters(){
+        if (transactionsTable.getItems()==null || transactionsObvList.isEmpty()){
+            transactionsCounter.setText(transactionsCounter.getText().substring(0,transactionsCounterTxtLength)+0);
+            transactionsSum.setText(transactionsSum.getText().substring(0,transactionsTxtLength)+"0PLN");
+        }else{
+            transactionsCounter.setText(transactionsCounter.getText().substring(0,transactionsCounterTxtLength)+transactionsTable.getItems().size());
+            double sum = 0.0;
+            for (TransactionsTableModel trans : transactionsTable.getItems()) {
+                sum += Double.parseDouble(trans.getValue().substring(0,trans.getValue().indexOf('P')));
+            }
+            transactionsSum.setText(transactionsSum.getText().substring(0,transactionsTxtLength)+String.format("%.2f",sum)+"PLN");
+        }
+    }
 
+    private void refreshCCounters(){
+        if (customersTable.getItems()==null || customersObvList.isEmpty()){
+            customersCounter.setText(customersCounter.getText().substring(0,customersCounterTxtLength)+0);
+        }else{
+            customersCounter.setText(customersCounter.getText().substring(0,customersCounterTxtLength)+customersTable.getItems().size());
+        }
+    }
+
+    private void refreshBCounters(){
+        if(branchesTable.getItems()==null || branchesObvList.isEmpty()){
+            branchesCounter.setText(branchesCounter.getText().substring(0,branchesCounterTxtLength)+0);
+        }else{
+            branchesCounter.setText(branchesCounter.getText().substring(0,branchesCounterTxtLength)+branchesTable.getItems().size());
+        }
+    }
 }
 
 
@@ -391,7 +539,7 @@ public class Controller {
 //        }
 //        dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
 //        dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
-//        BranchDialog controller = fxmlLoader.getController();
+//        BranchDialogCtlr controller = fxmlLoader.getController();
 //        Optional<ButtonType> result = dialog.showAndWait();
 //        if (result.isPresent() && result.get() == ButtonType.OK){
 //            if (controller.areTextFieldsFilled()){

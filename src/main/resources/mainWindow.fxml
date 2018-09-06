@@ -95,13 +95,14 @@
                             <Font size="15"/>
                         </font>
                     </Label>
-                    <CheckBox fx:id="dateFilter" onAction="#handleDateFilter">
+                    <CheckBox fx:id="dateFilter" onAction="#handleRange">
                         <HBox.margin>
                             <Insets top="4"/>
                         </HBox.margin>
                     </CheckBox>
-                    <DatePicker fx:id="fromPickedDate" prefWidth="100"/>
-                    <DatePicker fx:id="toPickedDate" disable="true" prefWidth="100"/>
+                    <DatePicker fx:id="fromPickedDate" prefWidth="100" onAction="#handleDateFilter" editable="false"/>
+                    <DatePicker fx:id="toPickedDate" disable="true" prefWidth="100" onAction="#handleDateFilter" editable="false"/>
+                    <Button text="Clear dates" onAction="#handleClearDates"/>
                 </HBox>
             </ToolBar>
             <HBox>
@@ -110,7 +111,7 @@
                         <Font size="15"/>
                     </font>
                 </Label>
-                <TextField fx:id="branchIdFilter" prefWidth="30">
+                <TextField fx:id="branchIdFilter" prefWidth="30" onKeyReleased="#handleBranchFilter">
                     <font>
                         <Font size="10"/>
                     </font>
@@ -120,7 +121,7 @@
                         <Font size="15"/>
                     </font>
                 </Label>
-                <TextField fx:id="branchNameFilter">
+                <TextField fx:id="branchNameFilter" onKeyReleased="#handleBranchFilter">
                     <font>
                         <Font size="10"/>
                     </font>
@@ -130,7 +131,7 @@
                         <Font size="15"/>
                     </font>
                 </Label>
-                <TextField fx:id="customerIdFilter" prefWidth="30">
+                <TextField fx:id="customerIdFilter" prefWidth="30" onKeyReleased="#handleCustomerFilter">
                     <font>
                         <Font size="10"/>
                     </font>
@@ -140,7 +141,7 @@
                         <Font size="15"/>
                     </font>
                 </Label>
-                <TextField fx:id="customerNameFilter">
+                <TextField fx:id="customerNameFilter" onKeyReleased="#handleCustomerFilter">
                     <font>
                         <Font size="10"/>
                     </font>
@@ -155,8 +156,8 @@
                 <columns>
                     <TableColumn text="Branches" sortable="false" reorderable="false">
                         <columns>
-                            <TableColumn fx:id="branchIdCol" text="Id" prefWidth="40" reorderable="false"/>
-                            <TableColumn fx:id="branchNameCol" text="Name" prefWidth="200" reorderable="false"/>
+                            <TableColumn fx:id="branchIdCol" text="Id" prefWidth="40" reorderable="false" resizable="false"/>
+                            <TableColumn fx:id="branchNameCol" text="Name" prefWidth="200" reorderable="false" resizable="false"/>
                        </columns>
                     </TableColumn>
                 </columns>
@@ -168,8 +169,8 @@
                 <columns>
                     <TableColumn text="Customers" sortable="false" reorderable="false">
                         <columns>
-                            <TableColumn fx:id="customerIdCol" text="Id" prefWidth="40" reorderable="false"/>
-                            <TableColumn fx:id="customerNameCol" text="Name" prefWidth="200" reorderable="false"/>
+                            <TableColumn fx:id="customerIdCol" text="Id" prefWidth="40" reorderable="false" resizable="false"/>
+                            <TableColumn fx:id="customerNameCol" text="Name" prefWidth="200" reorderable="false" resizable="false"/>
                         </columns>
                     </TableColumn>
                 </columns>
@@ -181,8 +182,8 @@
                 <columns>
                     <TableColumn text="Transactions" sortable="false" reorderable="false">
                         <columns>
-                            <TableColumn fx:id="transactionDateCol" text="Date" reorderable="false" prefWidth="110"/>
-                            <TableColumn fx:id="transactionValueCol" text="Value" reorderable="false" prefWidth="130"/>
+                            <TableColumn fx:id="transactionDateCol" text="Date" reorderable="false" resizable="false" prefWidth="110"/>
+                            <TableColumn fx:id="transactionValueCol" text="Value" reorderable="false" resizable="false" prefWidth="130"/>
                         </columns>
                     </TableColumn>
                 </columns>

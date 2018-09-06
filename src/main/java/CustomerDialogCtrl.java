@@ -6,7 +6,7 @@ import org.w3c.dom.Text;
 
 import java.util.regex.Pattern;
 
-public class CustomerDialog {
+public class CustomerDialogCtrl {
 
     @FXML TextField id;
     @FXML TextField name;
@@ -17,7 +17,7 @@ public class CustomerDialog {
     private final Pattern patternInitial = Pattern.compile("\\d*(\\.?\\d{0,2})");
 
     public CustomersTableModel create(Integer branchId){
-        return new CustomersTableModel(Integer.parseInt(id.getText()),name.getText(),false, branchId);
+        return new CustomersTableModel(Integer.parseInt(id.getText()),name.getText().trim(),false, branchId);
     }
 
     public double getInitial(){
@@ -42,11 +42,7 @@ public class CustomerDialog {
         }else{
             tip.setVisible(false);
         }
-        if(id.getText().isEmpty() || name.getText().trim().isEmpty() || initial.getText().trim().isEmpty() || choiceBox.getSelectionModel().isEmpty()){
-            return false;
-        }else{
-            return true;
-        }
+        return !id.getText().isEmpty() && !name.getText().trim().isEmpty() && !initial.getText().trim().isEmpty() && !choiceBox.getSelectionModel().isEmpty();
     }
 
 }

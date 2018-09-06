@@ -3,7 +3,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import java.util.regex.Pattern;
 
-public class BranchDialog {
+public class BranchDialogCtlr {
 
     @FXML TextField id;
     @FXML TextField name;
@@ -23,10 +23,6 @@ public class BranchDialog {
         }else{
             tip.setVisible(false);
         }
-        if(id.getText().isEmpty() || name.getText().trim().isEmpty()){
-            return false;
-        }else{
-            return true;
-        }
+        return !id.getText().isEmpty() && !name.getText().trim().isEmpty();
     }
 }
