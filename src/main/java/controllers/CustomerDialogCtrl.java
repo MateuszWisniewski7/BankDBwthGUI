@@ -1,8 +1,11 @@
+package controllers;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import org.w3c.dom.Text;
+import models.BranchesTableModel;
+import models.CustomersTableModel;
 
 import java.util.regex.Pattern;
 

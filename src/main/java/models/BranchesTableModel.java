@@ -1,10 +1,10 @@
-public class CustomersTableModel extends TableModel{
+package models;
 
-    private Integer branchId;
+public class BranchesTableModel extends TableModel {
 
-    public CustomersTableModel(Integer id, String name, boolean selected, Integer branchId) {
+
+    public BranchesTableModel(Integer id, String name, boolean selected) {
         super(id,name,selected);
-        this.branchId = branchId;
     }
 
     @Override
@@ -32,17 +32,8 @@ public class CustomersTableModel extends TableModel{
         return selected;
     }
 
-    @Override
     public void setSelected(boolean selected) {
         this.selected = selected;
-    }
-
-    public Integer getBranchId() {
-        return branchId;
-    }
-
-    public void setBranchId(Integer branchId) {
-        this.branchId = branchId;
     }
 
     @Override

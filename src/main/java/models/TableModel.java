@@ -1,41 +1,37 @@
-public class BranchesTableModel extends TableModel    {
+package models;
 
+public abstract class TableModel {
+    protected Integer id;
+    protected String name;
+    protected boolean selected;
 
-    public BranchesTableModel(Integer id, String name, boolean selected) {
-        super(id,name,selected);
+    public TableModel(Integer id, String name, boolean selected) {
+        this.id = id;
+        this.name = name;
+        this.selected = selected;
     }
 
-    @Override
     public Integer getId() {
         return id;
     }
 
-    @Override
     public void setId(Integer id) {
         this.id = id;
     }
 
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
     public void setName(String name) {
         this.name = name;
     }
 
-    @Override
     public boolean isSelected() {
         return selected;
     }
 
     public void setSelected(boolean selected) {
         this.selected = selected;
-    }
-
-    @Override
-    public String toString() {
-        return id +". "+ name;
     }
 }

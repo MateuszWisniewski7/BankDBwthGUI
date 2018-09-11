@@ -1,6 +1,11 @@
+package controllers;
+
+import DB.DataSource;
+import controllers.BranchDialogCtlr;
+import controllers.CustomerDialogCtrl;
+import controllers.TransactionDialogCtrl;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
@@ -8,10 +13,12 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
-
+import models.BranchesTableModel;
+import models.CustomersTableModel;
+import models.TableModel;
+import models.TransactionsTableModel;
 import java.io.IOException;
 import java.time.chrono.ChronoLocalDate;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -87,7 +94,7 @@ public class Controller {
                         transactionsTable.setItems(null);
                         toPickedDate.getEditor().clear();
                         fromPickedDate.getEditor().clear();
-                        customersObvList=DataSource.getInstance().loadCustomers(branchesTable.getSelectionModel().getSelectedItem().getId());
+                        customersObvList= DataSource.getInstance().loadCustomers(branchesTable.getSelectionModel().getSelectedItem().getId());
                         filteredCustomersObvList=customersObvList;
                         customersTable.setItems(filteredCustomersObvList);
                         customerNameCol.setSortType(TableColumn.SortType.ASCENDING);
@@ -115,7 +122,7 @@ public class Controller {
             if(mouseEvent.getButton().equals(MouseButton.PRIMARY)){
                 if(mouseEvent.getClickCount() == 2){
                     try{
-                        transactionsObvList=DataSource.getInstance().loadTransactions(customersTable.getSelectionModel().getSelectedItem().getId());
+                        transactionsObvList= DataSource.getInstance().loadTransactions(customersTable.getSelectionModel().getSelectedItem().getId());
                         toPickedDate.getEditor().clear();
                         fromPickedDate.getEditor().clear();
                         transactionsTable.setItems(transactionsObvList);
@@ -228,7 +235,7 @@ public class Controller {
         dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
         TransactionDialogCtrl controller = fxmlLoader.getController();
-        ObservableList<CustomersTableModel> allCustomers=DataSource.getInstance().loadAllCustomers();
+        ObservableList<CustomersTableModel> allCustomers= DataSource.getInstance().loadAllCustomers();
         controller.choiceBox.setItems(allCustomers);
         if(!(customersTable.getSelectionModel().getSelectedItem()==null)){
             controller.choiceBox.getItems().filtered(item->item.getId().equals(customersTable.getSelectionModel().getSelectedItem().getId())).forEach(item->controller.choiceBox.getSelectionModel().select(item));
@@ -525,7 +532,7 @@ public class Controller {
 }
 
 
-//    private <S extends BranchesTableModel , T> void add(String title,String resource,Class T){
+//    private <S extends models.BranchesTableModel , T> void add(String title,String resource,Class T){
 //        Dialog<ButtonType> dialog = new Dialog<>();
 //        dialog.initOwner(mainPane.getScene().getWindow());
 //        dialog.setTitle(title);
@@ -539,11 +546,11 @@ public class Controller {
 //        }
 //        dialog.getDialogPane().getButtonTypes().add(ButtonType.OK);
 //        dialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
-//        BranchDialogCtlr controller = fxmlLoader.getController();
+//        controllers.BranchDialogCtlr controller = fxmlLoader.getController();
 //        Optional<ButtonType> result = dialog.showAndWait();
 //        if (result.isPresent() && result.get() == ButtonType.OK){
 //            if (controller.areTextFieldsFilled()){
-//                TableModel newObj = controller.create();
+//                models.TableModel newObj = controller.create();
 //                if(!branchesObvList.contains(newObj)){
 //                    branchesObvList.add(branchesObvList.get(0).getClass().cast(newObj));
 //                    branchesTable.getSelectionModel().select(branchesObvList..getComponentType().cast(newObj));

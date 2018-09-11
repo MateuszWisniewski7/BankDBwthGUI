@@ -1,6 +1,11 @@
+package DB;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import models.BranchesTableModel;
+import models.CustomersTableModel;
+import models.TransactionsTableModel;
+
 import java.sql.*;
 import java.time.LocalDateTime;
 
