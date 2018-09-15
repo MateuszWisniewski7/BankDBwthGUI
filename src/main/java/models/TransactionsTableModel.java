@@ -14,14 +14,16 @@ public class TransactionsTableModel {
 
     public TransactionsTableModel(Timestamp date, String value, int customerId) {
         this.date = date.toLocalDateTime();
-        this.value = value+"PLN";
+        this.value = value
+                     + "PLN";
         this.customerId = customerId;
         this.formattedDate = df.format(date.toLocalDateTime());
 
     }
 
     public LocalDateTime getDate() {
-        return date;}
+        return date;
+    }
 
     public void setDate(String date) {
         this.date = LocalDateTime.parse(date);
